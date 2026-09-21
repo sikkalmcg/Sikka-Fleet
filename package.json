@@ -1,0 +1,19 @@
+{
+  "name": "sikka-fleet",
+  "version": "1.0.0",
+  "description": "Enterprise Fleet Management Application for Sikka LMC",
+  "scripts": {
+    "start:backend": "node backend/server.js",
+    "start:frontend": "npm --prefix frontend run dev",
+    "build:frontend": "npm --prefix frontend run build",
+    "seed": "node backend/scripts/seed.js"
+  },
+  "keywords": [
+    "fleet-management",
+    "geofence",
+    "gps",
+    "telematics"
+  ],
+  "author": "Sikka LMC",
+  "license": "ISC"
+}
