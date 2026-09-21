@@ -32,7 +32,16 @@ export default function PlantPage() {
   const [selectedPlant, setSelectedPlant] = useState<PlantRecord | null>(null);
 
   // Form states
-  const [formData, setFormData] = useState({
+  const [createFormData, setCreateFormData] = useState({
+    plantName: '',
+    location: '',
+    radiusMeter: '500',
+    latitude: '28.6280',
+    longitude: '77.3670',
+    status: 'Active' as 'Active' | 'Inactive',
+  });
+
+  const [editFormData, setEditFormData] = useState({
     plantName: '',
     location: '',
     radiusMeter: '500',
@@ -64,7 +73,7 @@ export default function PlantPage() {
 
   // Open Create Modal
   const openCreateModal = () => {
-    setFormData({
+    setCreateFormData({
       plantName: '',
       location: '',
       radiusMeter: '500',
@@ -79,10 +88,16 @@ export default function PlantPage() {
   // Open Edit Modal
   const openEditModal = (plant: PlantRecord) => {
     setSelectedPlant(plant);
-    setFormData({
+    const radiusVal =
+      plant.radiusMeters !== undefined
+        ? plant.radiusMeters
+        : plant.radiusMeter !== undefined
+        ? plant.radiusMeter
+        : 500;
+    setEditFormData({
       plantName: plant.plantName,
       location: plant.location,
-      radiusMeter: String(plant.radiusMeters || plant.radiusMeter || 500),
+      radiusMeter: String(radiusVal),
       latitude: String(plant.latitude),
       longitude: String(plant.longitude),
       status: plant.status,
@@ -96,25 +111,25 @@ export default function PlantPage() {
     e.preventDefault();
     setFormError('');
 
-    if (!formData.plantName.trim()) {
+    if (!createFormData.plantName.trim()) {
       setFormError('Plant Name is required.');
       return;
     }
-    if (!formData.location.trim()) {
+    if (!createFormData.location.trim()) {
       setFormError('Location is required.');
       return;
     }
-    const radius = Number(formData.radiusMeter);
+    const radius = Number(createFormData.radiusMeter);
     if (isNaN(radius) || radius <= 0) {
       setFormError('Radius must be a positive number greater than 0.');
       return;
     }
-    const lat = Number(formData.latitude);
+    const lat = Number(createFormData.latitude);
     if (isNaN(lat) || lat < -90 || lat > 90) {
       setFormError('Latitude must be a valid number between -90 and 90.');
       return;
     }
-    const lon = Number(formData.longitude);
+    const lon = Number(createFormData.longitude);
     if (isNaN(lon) || lon < -180 || lon > 180) {
       setFormError('Longitude must be a valid number between -180 and 180.');
       return;
@@ -122,15 +137,16 @@ export default function PlantPage() {
 
     setIsSubmitting(true);
     try {
-      await apiRequest('/plants', {
+      const res = await apiRequest<{ message: string; plant: PlantRecord }>('/plants', {
         method: 'POST',
         body: JSON.stringify({
-          plantName: formData.plantName.trim(),
-          location: formData.location.trim(),
+          plantName: createFormData.plantName.trim(),
+          location: createFormData.location.trim(),
           radiusMeter: radius,
+          radiusMeters: radius,
           latitude: lat,
           longitude: lon,
-          status: formData.status,
+          status: createFormData.status,
         }),
       });
 
@@ -139,6 +155,9 @@ export default function PlantPage() {
         type: 'success',
         message: 'Plant created successfully.',
       });
+      if (res && res.plant) {
+        setPlants((prev) => [res.plant, ...prev.filter((p) => p._id !== res.plant._id)]);
+      }
       fetchPlants();
     } catch (err: any) {
       setFormError(err.message || 'Failed to create plant.');
@@ -153,25 +172,25 @@ export default function PlantPage() {
     if (!selectedPlant) return;
     setFormError('');
 
-    if (!formData.plantName.trim()) {
+    if (!editFormData.plantName.trim()) {
       setFormError('Plant Name is required.');
       return;
     }
-    if (!formData.location.trim()) {
+    if (!editFormData.location.trim()) {
       setFormError('Location is required.');
       return;
     }
-    const radius = Number(formData.radiusMeter);
+    const radius = Number(editFormData.radiusMeter);
     if (isNaN(radius) || radius <= 0) {
       setFormError('Radius must be greater than 0.');
       return;
     }
-    const lat = Number(formData.latitude);
+    const lat = Number(editFormData.latitude);
     if (isNaN(lat) || lat < -90 || lat > 90) {
       setFormError('Latitude must be between -90 and 90.');
       return;
     }
-    const lon = Number(formData.longitude);
+    const lon = Number(editFormData.longitude);
     if (isNaN(lon) || lon < -180 || lon > 180) {
       setFormError('Longitude must be between -180 and 180.');
       return;
@@ -179,18 +198,23 @@ export default function PlantPage() {
 
     setIsSubmitting(true);
     try {
-      await apiRequest(`/plants/${selectedPlant._id}`, {
+      const res = await apiRequest<{ message: string; plant: PlantRecord }>(`/plants/${selectedPlant._id}`, {
         method: 'PUT',
         body: JSON.stringify({
-          plantName: formData.plantName.trim(),
-          location: formData.location.trim(),
+          plantName: editFormData.plantName.trim(),
+          location: editFormData.location.trim(),
           radiusMeter: radius,
+          radiusMeters: radius,
           latitude: lat,
           longitude: lon,
-          status: formData.status,
+          status: editFormData.status,
         }),
       });
 
+      // Preserve user edit immediately in state so it cannot auto change or revert
+      if (res && res.plant) {
+        setPlants((prev) => prev.map((p) => (p._id === selectedPlant._id ? res.plant : p)));
+      }
       setIsEditModalOpen(false);
       setSelectedPlant(null);
       setAlert({
@@ -359,10 +383,10 @@ export default function PlantPage() {
               </label>
               <input
                 type="text"
-                value={formData.plantName}
-                onChange={(e) => setFormData({ ...formData, plantName: e.target.value })}
+                value={createFormData.plantName}
+                onChange={(e) => setCreateFormData({ ...createFormData, plantName: e.target.value })}
                 placeholder="e.g. Tea Plant"
-                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm font-medium focus:border-emerald-500 focus:outline-hidden"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-900 placeholder:text-slate-400 text-sm font-semibold focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus:outline-hidden transition-all shadow-xs"
                 disabled={isSubmitting}
                 required
               />
@@ -374,10 +398,10 @@ export default function PlantPage() {
               </label>
               <input
                 type="text"
-                value={formData.location}
-                onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                value={createFormData.location}
+                onChange={(e) => setCreateFormData({ ...createFormData, location: e.target.value })}
                 placeholder="e.g. Sector 62, Noida, UP"
-                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm font-medium focus:border-emerald-500 focus:outline-hidden"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-900 placeholder:text-slate-400 text-sm font-semibold focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus:outline-hidden transition-all shadow-xs"
                 disabled={isSubmitting}
                 required
               />
@@ -391,10 +415,10 @@ export default function PlantPage() {
                 type="number"
                 min="1"
                 step="1"
-                value={formData.radiusMeter}
-                onChange={(e) => setFormData({ ...formData, radiusMeter: e.target.value })}
+                value={createFormData.radiusMeter}
+                onChange={(e) => setCreateFormData({ ...createFormData, radiusMeter: e.target.value })}
                 placeholder="500"
-                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm font-medium focus:border-emerald-500 focus:outline-hidden"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-900 placeholder:text-slate-400 text-sm font-semibold focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus:outline-hidden transition-all shadow-xs"
                 disabled={isSubmitting}
                 required
               />
@@ -411,10 +435,10 @@ export default function PlantPage() {
                 <input
                   type="number"
                   step="any"
-                  value={formData.latitude}
-                  onChange={(e) => setFormData({ ...formData, latitude: e.target.value })}
+                  value={createFormData.latitude}
+                  onChange={(e) => setCreateFormData({ ...createFormData, latitude: e.target.value })}
                   placeholder="28.6280"
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm font-mono focus:border-emerald-500 focus:outline-hidden"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-900 placeholder:text-slate-400 text-sm font-mono font-semibold focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus:outline-hidden transition-all shadow-xs"
                   disabled={isSubmitting}
                   required
                 />
@@ -427,10 +451,10 @@ export default function PlantPage() {
                 <input
                   type="number"
                   step="any"
-                  value={formData.longitude}
-                  onChange={(e) => setFormData({ ...formData, longitude: e.target.value })}
+                  value={createFormData.longitude}
+                  onChange={(e) => setCreateFormData({ ...createFormData, longitude: e.target.value })}
                   placeholder="77.3670"
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm font-mono focus:border-emerald-500 focus:outline-hidden"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-900 placeholder:text-slate-400 text-sm font-mono font-semibold focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus:outline-hidden transition-all shadow-xs"
                   disabled={isSubmitting}
                   required
                 />
@@ -442,9 +466,9 @@ export default function PlantPage() {
                 Status
               </label>
               <select
-                value={formData.status}
-                onChange={(e) => setFormData({ ...formData, status: e.target.value as any })}
-                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm font-medium focus:border-emerald-500 focus:outline-hidden bg-white"
+                value={createFormData.status}
+                onChange={(e) => setCreateFormData({ ...createFormData, status: e.target.value as any })}
+                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-900 text-sm font-semibold focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus:outline-hidden transition-all shadow-xs cursor-pointer"
                 disabled={isSubmitting}
               >
                 <option value="Active">Active</option>
@@ -493,9 +517,10 @@ export default function PlantPage() {
               </label>
               <input
                 type="text"
-                value={formData.plantName}
-                onChange={(e) => setFormData({ ...formData, plantName: e.target.value })}
-                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm font-medium focus:border-emerald-500 focus:outline-hidden"
+                value={editFormData.plantName}
+                onChange={(e) => setEditFormData({ ...editFormData, plantName: e.target.value })}
+                placeholder="Enter plant name"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-900 placeholder:text-slate-400 text-sm font-semibold focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus:outline-hidden transition-all shadow-xs"
                 disabled={isSubmitting}
                 required
               />
@@ -507,9 +532,10 @@ export default function PlantPage() {
               </label>
               <input
                 type="text"
-                value={formData.location}
-                onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm font-medium focus:border-emerald-500 focus:outline-hidden"
+                value={editFormData.location}
+                onChange={(e) => setEditFormData({ ...editFormData, location: e.target.value })}
+                placeholder="Enter plant physical location"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-900 placeholder:text-slate-400 text-sm font-semibold focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus:outline-hidden transition-all shadow-xs"
                 disabled={isSubmitting}
                 required
               />
@@ -523,12 +549,16 @@ export default function PlantPage() {
                 type="number"
                 min="1"
                 step="1"
-                value={formData.radiusMeter}
-                onChange={(e) => setFormData({ ...formData, radiusMeter: e.target.value })}
-                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm font-medium focus:border-emerald-500 focus:outline-hidden"
+                value={editFormData.radiusMeter}
+                onChange={(e) => setEditFormData({ ...editFormData, radiusMeter: e.target.value })}
+                placeholder="e.g. 500"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-900 placeholder:text-slate-400 text-sm font-semibold focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus:outline-hidden transition-all shadow-xs"
                 disabled={isSubmitting}
                 required
               />
+              <span className="text-[11px] text-slate-500 mt-1 block">
+                Radius in meters (e.g. 500 means a 500-meter circular geofence perimeter around the plant).
+              </span>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -539,9 +569,10 @@ export default function PlantPage() {
                 <input
                   type="number"
                   step="any"
-                  value={formData.latitude}
-                  onChange={(e) => setFormData({ ...formData, latitude: e.target.value })}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm font-mono focus:border-emerald-500 focus:outline-hidden"
+                  value={editFormData.latitude}
+                  onChange={(e) => setEditFormData({ ...editFormData, latitude: e.target.value })}
+                  placeholder="e.g. 28.6280"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-900 placeholder:text-slate-400 text-sm font-mono font-semibold focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus:outline-hidden transition-all shadow-xs"
                   disabled={isSubmitting}
                   required
                 />
@@ -554,9 +585,10 @@ export default function PlantPage() {
                 <input
                   type="number"
                   step="any"
-                  value={formData.longitude}
-                  onChange={(e) => setFormData({ ...formData, longitude: e.target.value })}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm font-mono focus:border-emerald-500 focus:outline-hidden"
+                  value={editFormData.longitude}
+                  onChange={(e) => setEditFormData({ ...editFormData, longitude: e.target.value })}
+                  placeholder="e.g. 77.3670"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-900 placeholder:text-slate-400 text-sm font-mono font-semibold focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus:outline-hidden transition-all shadow-xs"
                   disabled={isSubmitting}
                   required
                 />
@@ -568,15 +600,15 @@ export default function PlantPage() {
                 Status
               </label>
               <select
-                value={formData.status}
-                onChange={(e) => setFormData({ ...formData, status: e.target.value as any })}
-                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm font-medium focus:border-emerald-500 focus:outline-hidden bg-white"
+                value={editFormData.status}
+                onChange={(e) => setEditFormData({ ...editFormData, status: e.target.value as any })}
+                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-900 text-sm font-semibold focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus:outline-hidden transition-all shadow-xs cursor-pointer"
                 disabled={isSubmitting}
               >
                 <option value="Active">Active</option>
                 <option value="Inactive">Inactive</option>
               </select>
-              {formData.status === 'Inactive' && (
+              {editFormData.status === 'Inactive' && (
                 <p className="text-[11px] text-amber-600 mt-1 font-medium">
                   Note: Inactive plants will not participate in vehicle geofence matching. Existing historical records remain intact.
                 </p>

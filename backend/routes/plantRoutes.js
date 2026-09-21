@@ -29,7 +29,7 @@ router.get('/', async (req, res) => {
 // POST /api/plants - Create plant
 router.post('/', async (req, res) => {
   try {
-    const { plantName, location, radiusMeter, latitude, longitude, status } = req.body;
+    const { plantName, location, radiusMeter, radiusMeters, latitude, longitude, status } = req.body;
 
     // Validation
     if (!plantName || !plantName.trim()) {
@@ -38,7 +38,7 @@ router.post('/', async (req, res) => {
     if (!location || !location.trim()) {
       return res.status(400).json({ error: 'Location is required.' });
     }
-    const numRadius = Number(radiusMeter);
+    const numRadius = Number(radiusMeters !== undefined ? radiusMeters : radiusMeter);
     if (isNaN(numRadius) || numRadius <= 0) {
       return res.status(400).json({ error: 'Radius must be a positive number greater than 0.' });
     }
@@ -67,6 +67,7 @@ router.post('/', async (req, res) => {
     const newPlant = await Plant.create({
       plantName: plantName.trim(),
       location: location.trim(),
+      radiusMeters: numRadius,
       radiusMeter: numRadius,
       latitude: numLat,
       longitude: numLon,
@@ -87,7 +88,7 @@ router.post('/', async (req, res) => {
 router.put('/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const { plantName, location, radiusMeter, latitude, longitude, status } = req.body;
+    const { plantName, location, radiusMeter, radiusMeters, latitude, longitude, status } = req.body;
 
     const plant = await Plant.findById(id);
     if (!plant) {
@@ -100,7 +101,7 @@ router.put('/:id', async (req, res) => {
     if (!location || !location.trim()) {
       return res.status(400).json({ error: 'Location is required.' });
     }
-    const numRadius = Number(radiusMeter);
+    const numRadius = Number(radiusMeters !== undefined ? radiusMeters : radiusMeter);
     if (isNaN(numRadius) || numRadius <= 0) {
       return res.status(400).json({ error: 'Radius must be a positive number greater than 0.' });
     }
@@ -129,10 +130,13 @@ router.put('/:id', async (req, res) => {
 
     plant.plantName = plantName.trim();
     plant.location = location.trim();
+    plant.radiusMeters = numRadius;
     plant.radiusMeter = numRadius;
     plant.latitude = numLat;
     plant.longitude = numLon;
     plant.status = plantStatus;
+    plant.markModified('radiusMeters');
+    plant.markModified('radiusMeter');
 
     await plant.save();
 

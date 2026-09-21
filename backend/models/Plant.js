@@ -17,6 +17,9 @@ const plantSchema = new mongoose.Schema(
       required: [true, 'Radius in meters is required'],
       min: [1, 'Radius must be greater than 0 meters'],
     },
+    radiusMeter: {
+      type: Number,
+    },
     latitude: {
       type: Number,
       required: [true, 'Latitude is required'],

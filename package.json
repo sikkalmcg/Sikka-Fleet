@@ -23,7 +23,8 @@
   "author": "Sikka LMC",
   "license": "ISC",
   "devDependencies": {
-    "concurrently": "^10.0.5"
+    "concurrently": "^10.0.5",
+    "wrangler": "^4.136.0"
   },
   "dependencies": {
     "mongodb": "^7.6.0"
