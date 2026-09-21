@@ -1,0 +1,12 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "sikka-fleet",
+  "compatibility_date": "2024-09-23",
+  "assets": {
+    "directory": "./frontend/out",
+    "not_found_handling": "single-page-application"
+  },
+  "build": {
+    "command": "npm --prefix frontend install && npm --prefix frontend run build"
+  }
+}

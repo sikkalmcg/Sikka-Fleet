@@ -5,7 +5,9 @@
   "scripts": {
     "start:backend": "node backend/server.js",
     "start:frontend": "npm --prefix frontend run dev",
+    "build": "npm --prefix frontend install && npm --prefix frontend run build",
     "build:frontend": "npm --prefix frontend run build",
+    "deploy": "wrangler deploy",
     "seed": "node backend/scripts/seed.js"
   },
   "keywords": [
