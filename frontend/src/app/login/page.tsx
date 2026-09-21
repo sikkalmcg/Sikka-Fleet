@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Eye, EyeOff, Lock, User as UserIcon, AlertCircle, ArrowRight, ShieldCheck } from 'lucide-react';
+import { Eye, EyeOff, Lock, User as UserIcon, AlertCircle, ArrowRight } from 'lucide-react';
 import { useAuth } from '../../lib/authContext';
 
 export default function LoginPage() {
@@ -39,11 +39,6 @@ export default function LoginPage() {
     }
   };
 
-  const handleQuickFill = (u: string, p: string) => {
-    setUsername(u);
-    setPassword(p);
-    setErrorMessage('');
-  };
 
   return (
     <div className="min-h-screen flex flex-col justify-center items-center p-4 sm:p-6 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 text-slate-100">
@@ -159,36 +154,6 @@ export default function LoginPage() {
             </div>
           </form>
 
-          {/* Quick Demo Fill Buttons */}
-          <div className="mt-6 pt-5 border-t border-slate-100">
-            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400 text-center mb-2.5">
-              Instant Access Accounts
-            </p>
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={() => handleQuickFill('ajaysomra', 'Somra@2012')}
-                className="flex flex-col items-center p-2 rounded-xl border border-slate-200 hover:border-emerald-500 hover:bg-emerald-50/50 transition text-left cursor-pointer group"
-              >
-                <div className="flex items-center gap-1.5 text-xs font-bold text-slate-800 group-hover:text-emerald-700">
-                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-                  <span>Admin</span>
-                </div>
-                <span className="text-[10px] text-slate-500">Ajay Somra</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => handleQuickFill('operator', 'Operator@123')}
-                className="flex flex-col items-center p-2 rounded-xl border border-slate-200 hover:border-slate-400 hover:bg-slate-50 transition text-left cursor-pointer group"
-              >
-                <div className="flex items-center gap-1.5 text-xs font-bold text-slate-800 group-hover:text-slate-900">
-                  <UserIcon className="w-3.5 h-3.5 text-slate-500" />
-                  <span>Operator</span>
-                </div>
-                <span className="text-[10px] text-slate-500">Tea Plant Only</span>
-              </button>
-            </div>
-          </div>
         </div>
 
         {/* Footer info */}

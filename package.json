@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Enterprise Fleet Management Application for Sikka LMC",
   "scripts": {
-    "dev": "npm --prefix frontend run dev",
+    "dev": "concurrently -n \"backend,frontend\" -c \"green,cyan\" \"npm run start:backend\" \"npm run start:frontend\"",
     "dev:all": "concurrently -n \"backend,frontend\" -c \"green,cyan\" \"npm run start:backend\" \"npm run start:frontend\"",
     "dev:backend": "node backend/server.js",
     "dev:frontend": "npm --prefix frontend run dev",
@@ -24,5 +24,8 @@
   "license": "ISC",
   "devDependencies": {
     "concurrently": "^10.0.5"
+  },
+  "dependencies": {
+    "mongodb": "^7.6.0"
   }
 }
