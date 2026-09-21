@@ -3,6 +3,10 @@
   "version": "1.0.0",
   "description": "Enterprise Fleet Management Application for Sikka LMC",
   "scripts": {
+    "dev": "npm --prefix frontend run dev",
+    "dev:all": "concurrently -n \"backend,frontend\" -c \"green,cyan\" \"npm run start:backend\" \"npm run start:frontend\"",
+    "dev:backend": "node backend/server.js",
+    "dev:frontend": "npm --prefix frontend run dev",
     "start:backend": "node backend/server.js",
     "start:frontend": "npm --prefix frontend run dev",
     "build": "npm --prefix frontend install && npm --prefix frontend run build",
@@ -17,5 +21,8 @@
     "telematics"
   ],
   "author": "Sikka LMC",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "concurrently": "^10.0.5"
+  }
 }
