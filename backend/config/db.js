@@ -1,6 +1,11 @@
 const mongoose = require('mongoose');
 
 const connectDB = async () => {
+  // Reuse existing connection if available (for serverless environments like Vercel)
+  if (mongoose.connection.readyState >= 1) {
+    return mongoose.connection;
+  }
+
   const primaryURI = process.env.MONGODB_URI || process.env.MONGO_URI;
   const localURI = 'mongodb://127.0.0.1:27017/sikka_fleet';
   const dbName = process.env.MONGODB_DB_NAME || 'sikka_fleet';

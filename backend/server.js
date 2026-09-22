@@ -55,13 +55,17 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Start Server
-app.listen(PORT, () => {
-  console.log(`=========================================`);
-  console.log(`🚀 Sikka Fleet Backend API running on port ${PORT}`);
-  console.log(`📡 URL: http://localhost:${PORT}`);
-  console.log(`=========================================`);
+// Start Server if run directly
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`=========================================`);
+    console.log(`🚀 Sikka Fleet Backend API running on port ${PORT}`);
+    console.log(`📡 URL: http://localhost:${PORT}`);
+    console.log(`=========================================`);
 
-  // Start background GPS polling worker (every 20 minutes)
-  startGpsPoller(20 * 60);
-});
+    // Start background GPS polling worker (every 20 minutes)
+    startGpsPoller(20 * 60);
+  });
+}
+
+module.exports = app;
