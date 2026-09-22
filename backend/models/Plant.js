@@ -45,15 +45,6 @@ const plantSchema = new mongoose.Schema(
   }
 );
 
-// Virtual alias radiusMeter -> radiusMeters for frontend backward compatibility
-plantSchema.virtual('radiusMeter')
-  .get(function () {
-    return this.radiusMeters;
-  })
-  .set(function (v) {
-    this.radiusMeters = v;
-  });
-
 plantSchema.index({ plantName: 1, status: 1 });
 
 module.exports = mongoose.model('Plant', plantSchema);

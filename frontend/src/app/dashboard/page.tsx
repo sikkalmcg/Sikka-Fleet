@@ -20,7 +20,7 @@ import {
 import AppLayout from '../../components/AppLayout';
 import Modal from '../../components/Modal';
 import AlertBanner, { AlertState } from '../../components/AlertBanner';
-import { apiRequest } from '../../lib/api';
+import { apiRequest, API_BASE_URL } from '../../lib/api';
 import { formatDateTime, formatDistance } from '../../lib/formatters';
 import { useAuth } from '../../lib/authContext';
 
@@ -114,14 +114,14 @@ export default function DashboardPage() {
   const exportPlantVehiclesToExcel = () => {
     if (!selectedPlant) return;
     const token = typeof window !== 'undefined' ? localStorage.getItem('sikka_fleet_token') || '' : '';
-    const downloadUrl = `http://localhost:5000/api/dashboard/plants/${selectedPlant.id}/export?token=${encodeURIComponent(token)}`;
+    const downloadUrl = `${API_BASE_URL}/dashboard/plants/${selectedPlant.id}/export?token=${encodeURIComponent(token)}`;
     window.location.href = downloadUrl;
   };
 
   // Export Outside Vehicles to .xls via server download
   const exportOutsideVehiclesToExcel = () => {
     const token = typeof window !== 'undefined' ? localStorage.getItem('sikka_fleet_token') || '' : '';
-    const downloadUrl = `http://localhost:5000/api/dashboard/outside/export?token=${encodeURIComponent(token)}`;
+    const downloadUrl = `${API_BASE_URL}/dashboard/outside/export?token=${encodeURIComponent(token)}`;
     window.location.href = downloadUrl;
   };
 
