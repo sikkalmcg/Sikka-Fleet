@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: sikka-fleet-backend
+    env: node
+    plan: free
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: node server.js
+    healthCheckPath: /api/health
+    envVars:
+      - key: MONGODB_URI
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: MONGODB_DB_NAME
+        value: sikka_fleet
